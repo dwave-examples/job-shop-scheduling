@@ -35,8 +35,8 @@ pancakes are being mixed).
 
 Usage
 -----
-To run the demo:
-::
+To run the demo::
+
   python demo.py
 
 Code Overview
@@ -123,4 +123,4 @@ D. Venturelli, D. Marchand, and G. Rojo,
 
 License
 -------
-Released under the Apache License 2.0. See `LICENSE <../LICENSE>`_ file.
+Released under the Apache License 2.0. See `LICENSE <./LICENSE>`_ file.

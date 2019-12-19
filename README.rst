@@ -1,5 +1,6 @@
-Job Shop Scheduling Demo
-========================
+===================
+Job Shop Scheduling
+===================
 A demo on how to optimally schedule jobs using a quantum computer.
 
 Given a set of jobs and a finite number of machines, how should we schedule

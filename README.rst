@@ -98,14 +98,15 @@ However, this is a huge space to explore, and makes our BQM unnecessarily
 large and difficult to solve.
 
 Instead, we can apply our knowledge on the *worst possible* schedule scenario
-so that we can put an upper bound on the schedule end times. The worst possible scenario
-is if all job tasks require the same exact machine, hence there is no opportunity
-for parallelization. In this case, the schedule end time is the sum of all
-task durations because that one machine will run those tasks back-to-back. We know
-the optimal schedule for these tasks must finish earlier or at the same time as
-this worst case scenario because these tasks don't necessarily all need to run
-on that one machine; this allows for parallelization and a shorter schedule. Thus,
-by default, the ``max_time`` considered for a schedule is the sum of task durations.
+so that we can put an upper bound on the schedule end times. The worst possible
+scenario is if all job tasks require the same exact machine, hence there is no
+opportunity for parallelization. In this case, the schedule end time is the sum
+of all task durations because that one machine will run those tasks
+back-to-back. We know the optimal schedule for these tasks must finish earlier
+or at the same time as this worst case scenario because these tasks don't
+necessarily all need to run on that one machine; this allows for parallelization
+and a shorter schedule. Thus, by default, the ``max_time`` considered for a
+schedule is the sum of task durations.
 
 Note that we can lower ``max_time`` so that the solver considers a smaller space
 of schedule solutions. In terms of quantum computing hardware, this means

@@ -1,4 +1,1 @@
-dwave-ocean-sdk==1.4.0
-
-# backport
-mock; python_version=="2.7"
+dwave-ocean-sdk==1.6.0

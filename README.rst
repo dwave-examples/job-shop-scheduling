@@ -1,3 +1,7 @@
+.. image:: https://circleci.com/gh/dwave-examples/job-shop-scheduling.svg?style=svg
+    :target: https://circleci.com/gh/dwave-examples/job-shop-scheduling
+    :alt: Linux/Mac/Windows build status
+
 ===================
 Job Shop Scheduling
 ===================

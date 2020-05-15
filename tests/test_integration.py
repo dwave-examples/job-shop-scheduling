@@ -15,14 +15,20 @@
 import subprocess
 import unittest
 import os
+import sys 
+
+project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 class IntegrationTests(unittest.TestCase):
 
     def test_job_shop_scheduling(self):
-        cwd=os.getcwd()
-        output=subprocess.check_output(["python", cwd+"/demo.py"])
+        """ Verify contents of output """
+        
+        demo_file = os.path.join(project_dir, 'demo.py')
+        output=subprocess.check_output([sys.executable, demo_file])
         output=str(output)
-        print("Example output \n"+output)
+        if os.getenv('DEBUG_OUTPUT'):
+            print("Example output \n"+ output)
 
         with self.subTest(msg="Verify if output contains 'Jobs and the start times of each task' \n"):
             self.assertIn("Jobs and the start times of each task".upper(),output.upper())

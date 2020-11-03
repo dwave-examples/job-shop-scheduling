@@ -47,7 +47,7 @@ def get_jss_bqm(job_dict, max_time=None, stitch_kwargs=None):
         >>> bqm = get_jss_bqm(jobs, max_time, stitch_kwargs)
 
         >>> # May need to tweak the chain strength and the number of reads
-        >>> sampler = EmbeddingComposite(DWaveSampler(solver={'qpu':True}))
+        >>> sampler = EmbeddingComposite(DWaveSampler())
         >>> sampleset = sampler.sample(bqm, chain_strength=2, num_reads=1000)
 
         >>> # Results

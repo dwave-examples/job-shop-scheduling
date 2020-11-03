@@ -29,7 +29,7 @@ print(bqm)
 
 # Submit BQM
 # Note: may need to tweak the chain strength and the number of reads
-sampler = EmbeddingComposite(DWaveSampler(solver={'qpu':True}))
+sampler = EmbeddingComposite(DWaveSampler())
 sampleset = sampler.sample(bqm, chain_strength=2, num_reads=1000)
 
 # Grab solution

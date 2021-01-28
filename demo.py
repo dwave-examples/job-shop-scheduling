@@ -30,7 +30,10 @@ print(bqm)
 # Submit BQM
 # Note: may need to tweak the chain strength and the number of reads
 sampler = EmbeddingComposite(DWaveSampler())
-sampleset = sampler.sample(bqm, chain_strength=2, num_reads=1000)
+sampleset = sampler.sample(bqm,
+                           chain_strength=2,
+                           num_reads=1000,
+                           label='Example - Job Shop Scheduling')
 
 # Grab solution
 solution = sampleset.first.sample
@@ -63,7 +66,7 @@ for node in selected_nodes:
     task_index, start_time = map(int, task_time.split(","))
 
     task_times[job_name][task_index] = start_time
-    
+
 # Print problem and restructured solution
 print("Jobs and their machine-specific tasks:")
 for job, task_list in jobs.items():
@@ -72,4 +75,3 @@ for job, task_list in jobs.items():
 print("\nJobs and the start times of each task:")
 for job, times in task_times.items():
     print("{0:9}: {1}".format(job, times))
-

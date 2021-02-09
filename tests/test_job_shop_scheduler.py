@@ -219,7 +219,7 @@ class TestJSSExactSolverResponse(unittest.TestCase):
         jss = JobShopScheduler(jobs, max_time)
         bqm = jss.get_bqm()
         response = ExactSolver().sample(bqm)
-        response_sample = next(response.samples())
+        response_sample = response.first.sample
 
         # Verify that response_sample obeys constraints
         self.assertTrue(jss.csp.check(response_sample))
@@ -240,7 +240,7 @@ class TestJSSExactSolverResponse(unittest.TestCase):
         jss = JobShopScheduler(jobs, max_time)
         bqm = jss.get_bqm()
         response = ExactSolver().sample(bqm)
-        response_sample = next(response.samples())
+        response_sample = response.first.sample
 
         # Verify that response_sample obeys constraints
         self.assertTrue(jss.csp.check(response_sample))

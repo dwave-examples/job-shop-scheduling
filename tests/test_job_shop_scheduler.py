@@ -85,12 +85,12 @@ class TestIndividualJSSConstraints(unittest.TestCase):
 
     def test_precedenceConstraint(self):
         jobs = {0: [("m1", 2), ("m2", 1)]}
-        max_time = 4
+        max_time = 3
         jss = JobShopScheduler(jobs, max_time)
         jss._add_precedence_constraint()
 
         # Task 0_0 starts after task 0_1
-        backward_solution = {"0_0,3": 1, "0_1,0": 1}
+        backward_solution = {"0_0,2": 1, "0_1,0": 1}
         fill_with_zeros(backward_solution, jobs, max_time)
 
         # Tasks start at the same time
@@ -168,7 +168,7 @@ class TestCombinedJSSConstraints(unittest.TestCase):
     def test_relaxedSchedule(self):
         jobs = {"breakfast": [("cook", 2), ("eat", 1)],
                 "music": [("play", 2)]}
-        max_time = 7
+        max_time = 5
         jss = JobShopScheduler(jobs, max_time)
         jss.get_bqm()   # Run job shop scheduling constraints
 

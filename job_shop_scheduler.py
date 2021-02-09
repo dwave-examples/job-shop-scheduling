@@ -177,6 +177,9 @@ class JobShopScheduler:
 
         if self.max_time is None:
             self.max_time = total_time
+        elif self.max_time > total_time:
+            print('Warning, max_time will be reduced to worst case total time:', total_time)
+            self.max_time = total_time
         self.max_time -= 1    # -1 to account for zero-indexing
 
     def _add_one_start_constraint(self):

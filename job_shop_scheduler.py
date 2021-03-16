@@ -14,6 +14,7 @@
 
 from __future__ import print_function
 
+from re import match
 from bisect import bisect_right
 
 import dwavebinarycsp
@@ -356,3 +357,11 @@ class JobShopScheduler:
 
         return bqm
 
+
+def is_auxiliary_variable(v):
+    """Check whether named variable is an auxiliary variable.
+
+    Auxiliary variables may be added as part of converting the
+    constraint satisfaction problem to a BQM.
+    """
+    return match("aux\d+$", v)

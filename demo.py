@@ -17,7 +17,7 @@ from __future__ import print_function
 from dwave.system.composites import EmbeddingComposite
 from dwave.system.samplers import DWaveSampler
 
-from job_shop_scheduler import get_jss_bqm
+from job_shop_scheduler import get_jss_bqm, is_auxiliary_variable
 
 # Construct a BQM for the jobs
 jobs = {"cupcakes": [("mixer", 2), ("oven", 1)],
@@ -62,6 +62,8 @@ selected_nodes = [k for k, v in solution.items() if v == 1]
 # Parse node information
 task_times = {k: [-1]*len(v) for k, v in jobs.items()}
 for node in selected_nodes:
+    if is_auxiliary_variable(node):
+        continue
     job_name, task_time = node.rsplit("_", 1)
     task_index, start_time = map(int, task_time.split(","))
 

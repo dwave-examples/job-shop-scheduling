@@ -13,7 +13,6 @@
 # limitations under the License.
 
 from itertools import product
-from re import match
 import sys
 import unittest
 if sys.version_info.major < 3:
@@ -26,7 +25,7 @@ import dwavebinarycsp
 from dwavebinarycsp.exceptions import ImpossibleBQM
 from tabu import TabuSampler
 
-from job_shop_scheduler import JobShopScheduler, get_jss_bqm
+from job_shop_scheduler import JobShopScheduler, get_jss_bqm, is_auxiliary_variable
 
 
 def fill_with_zeros(expected_solution_dict, job_dict, max_time):
@@ -49,7 +48,7 @@ def fill_with_zeros(expected_solution_dict, job_dict, max_time):
 
 def get_energy(solution_dict, bqm):
     min_energy = float('inf')
-    aux_variables = [v for v in bqm.variables if match("aux\d+$", v)]
+    aux_variables = [v for v in bqm.variables if is_auxiliary_variable(v)]
 
     # Try all possible values of auxiliary variables
     for aux_values in product([0, 1], repeat=len(aux_variables)):
@@ -199,14 +198,14 @@ class TestJSSExactSolverResponse(unittest.TestCase):
 
         # Check that common variables match
         for key in common_keys:
-            if match('aux\d+$', key):
+            if is_auxiliary_variable(key):
                 continue
 
             self.assertEqual(response[key], expected[key], "Failed on key {}".format(key))
 
         # Check that non-existent 'sample' variables are 0
         for key in different_keys:
-            if match('aux\d+$', key):
+            if is_auxiliary_variable(key):
                 continue
 
             self.assertEqual(response[key], 0, "Failed on key {}".format(key))
@@ -220,7 +219,7 @@ class TestJSSExactSolverResponse(unittest.TestCase):
         jss = JobShopScheduler(jobs, max_time)
         bqm = jss.get_bqm()
         response = ExactSolver().sample(bqm)
-        response_sample = next(response.samples())
+        response_sample = response.first.sample
 
         # Verify that response_sample obeys constraints
         self.assertTrue(jss.csp.check(response_sample))
@@ -241,7 +240,7 @@ class TestJSSExactSolverResponse(unittest.TestCase):
         jss = JobShopScheduler(jobs, max_time)
         bqm = jss.get_bqm()
         response = ExactSolver().sample(bqm)
-        response_sample = next(response.samples())
+        response_sample = response.first.sample
 
         # Verify that response_sample obeys constraints
         self.assertTrue(jss.csp.check(response_sample))

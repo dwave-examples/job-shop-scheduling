@@ -25,7 +25,6 @@ jobs = {"cupcakes": [("mixer", 2), ("oven", 1)],
         "lasagna": [("oven", 2)]}
 max_time = 4	  # Upperbound on how long the schedule can be; 4 is arbitrary
 bqm = get_jss_bqm(jobs, max_time)
-print(bqm)
 
 # Submit BQM
 # Note: may need to tweak the chain strength and the number of reads

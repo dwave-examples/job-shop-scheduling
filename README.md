@@ -40,6 +40,15 @@ pancakes are being mixed).
 
 ## Usage
 
+Make sure requirements are installed in your developer environment with:
+```bash
+pip install -r requirements.txt
+```
+
+Or simply [open the example in Leap IDE](https://ide.dwavesys.io/#https://github.com/dwave-examples/job-shop-scheduling).
+
+Run the demo with:
+
 ```bash
 python demo.py
 ```

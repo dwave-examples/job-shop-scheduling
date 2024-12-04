@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> This repository has been archived and is no longer maintained. An updated version of the MVRP demo can be found [here](https://github.com/dwave-examples/mvrp).
+> This repository has been archived and is no longer maintained. An updated version of the Job Shop Scheduling demo can be found [here](https://github.com/dwave-examples/job-shop-scheduling-cqm).
 
 ---
 

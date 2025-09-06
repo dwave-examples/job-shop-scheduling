@@ -54,7 +54,7 @@ python app.py
 
 Access the user interface with your browser at http://127.0.0.1:8050/.
 
-To run the stand-alone job shop demo (without the user interace), use the
+To run the stand-alone job shop demo (without the user interface), use the
 command:
 
     python job_shop_scheduler.py [-h] [-i INSTANCE] [-tl TIME_LIMIT] [-os OUTPUT_SOLUTION] [-op OUTPUT_PLOT] [-m] [-v] [-q] [-p PROFILE] [-mm MAX_MAKESPAN]

@@ -12,10 +12,11 @@ is an optimization problem with the goal of scheduling jobs on a variety of mach
 where jobs are processed on machines in different orders. The objective is to
 minimize the time it takes to complete all jobs, also known as the "makespan".
 
-This example demonstrates a means of formulating and optimizing job shop
-scheduling (JSS) using a
-[constrained quadratic model](https://docs.dwavequantum.com/en/latest/concepts/models.html#constrained-quadratic-model) (CQM) that can be solved using a Leap hybrid
-CQM solver. Contained in this example is the code for running the job shop
+This example demonstrates two means of formulating and optimizing job shop
+scheduling (JSS): a nonlinear model solved with the Leap&trade; Stride&trade; hybrid
+solver and a
+[constrained quadratic model](https://docs.dwavequantum.com/en/latest/concepts/models.html#constrained-quadratic-model) (CQM) that can be solved using the Leap
+CQM hybrid solver. Contained in this example is the code for running the job shop
 scheduler as well as a user interface built with
 [Dash](https://dash.plotly.com/).
 
@@ -148,7 +149,103 @@ To see a full description of the options, type:
 
 ## Model Overview
 
-### Parameters
+This example can solve the JSS problem with one of three solvers, selected with the
+`-s` (`--solver`) command-line argument or as a setting in the user interface:
+
+-   `stride` (default): the Leap Stride hybrid solver, which optimizes the
+    nonlinear model described in the [Stride Model](#stride-model) section.
+-   `cqm`: the Leap CQM hybrid solver, which optimizes the constrained quadratic
+    model described in the [CQM](#cqm) section.
+-   `mip`: a classical mixed-integer programming solver, which optimizes the
+    linear variant of the same CQM formulation.
+
+### Stride Model
+
+The Stride solver optimizes nonlinear models built with the
+[dwave-optimization](https://github.com/dwavesystems/dwave-optimization)
+package. This example builds the model with the package's
+[`job_shop_scheduling` generator](https://github.com/dwavesystems/dwave-optimization/blob/main/dwave/optimization/generators.py#L996),
+which implements a variant of JSS in which every job is processed on every
+machine, so a problem with `n` jobs and `m` machines has `n * m` tasks in
+total.
+
+#### Parameters
+
+These are the parameters of the problem:
+
+-   `n` : is the number of jobs
+-   `m` : is the number of machines
+-   `M_(j,t)`: is the machine that processes task `t` of job `j`
+-   `D_(j,t)`: is the processing duration that task `t` needs for job `j`
+
+Each task is identified by a single global index: task `t` of job `j` is task
+number `m*j + t`, for `n*m` tasks in total.
+
+#### Variables
+
+The model has a single decision variable:
+
+-   `o` is a list variable of length `n*m` which is a permutation of the global task
+    indices `{0, 1, ..., n*m - 1}` that represents the order in which tasks
+    are added to the schedule
+
+Unlike the CQM, there are no start-time or precedence variables; the entire
+schedule is computed from the ordering `o`.
+
+#### Schedule Construction
+
+The schedule is derived from the ordering `o` in two steps, both encoded
+symbolically as part of the model:
+
+1.  The tasks in `o` are relabeled so that the tasks of each job appear in that
+    job's prescribed machine order: the `k`th time any task of job `j` appears
+    in the ordering, it is treated as task `k` of job `j`. This produces a
+    feasible global task ordering in which every job's tasks are in the correct
+    order.
+
+2.  Walking through the tasks in this feasible ordering, each task is placed at
+    the earliest time at which both its machine is free and the preceding task
+    of the same job has finished. With `s_(j,t)` and `e_(j,t)` denoting the
+    start and end times of task `t` of job `j`, and `c_i` denoting the
+    completion time of the last task placed so far on machine `i` (initially
+    `0` for every machine), each placement computes:
+
+    ```
+    s_(j,t) = max(e_(j,t-1), c_(M_(j,t)))
+    e_(j,t) = s_(j,t) + D_(j,t)
+    ```
+
+    where `e_(j,t-1)` is taken to be `0` for the first task (`t = 0`) of each
+    job. After the task is placed, its machine's completion time
+    `c_(M_(j,t))` is updated to `e_(j,t)`.
+
+#### Objective
+
+Our objective is to minimize the makespan `w`, which is the completion time of
+the machine that finishes last:
+
+```
+w = max(c_0, c_1, ..., c_(m-1))
+```
+
+#### Constraints
+
+The model has no explicit constraints. Because the schedule is constructed
+directly from the ordering `o`, every value of the decision variable decodes to
+a feasible schedule: the precedence requirement is satisfied by the relabeling
+in step 1, and the no-overlap requirement is satisfied by the placement rule in
+step 2. The solver's job is therefore to find the task ordering whose decoded
+schedule has the smallest makespan.
+
+The generated model also provides helper methods, used by this example, to
+extract the schedule from a returned solver state: `get_global_task_ordering()`,
+`get_start_times()`, and `get_end_times()`.
+
+### CQM
+
+The following formulation is used with the `cqm` and `mip` solvers.
+
+#### Parameters
 
 These are the parameters of the problem:
 
@@ -162,7 +259,7 @@ These are the parameters of the problem:
 -   `D_(j,t)`:  is the processing duration that task `t` needs for job `j`
 -   `V`:  maximum possible makespan
 
-### Variables
+#### Variables
 
 -   `w` is a positive integer variable that defines the completion time
     (makespan) of the JSS
@@ -171,13 +268,13 @@ These are the parameters of the problem:
 -   `y_(j_k,i)` are binaries which define if job `k` precedes job `j` on machine
     `i`
 
-### Objective
+#### Objective
 
 Our objective is to minimize the makespan (`w`) of the given JSS problem.
 
-### Constraints
+#### Constraints
 
-#### Precedence Constraint
+##### Precedence Constraint
 
 Our first constraint, [equation 1](#eq2), enforces the precedence constraint.
 This ensures that all tasks of a job are executed in the given order.
@@ -190,7 +287,7 @@ consecutive tasks 4 and 5 of job 3 that run on machine 6 and 1, respectively,
 assuming that task 4 takes 12 hours to finish, we add this constraint:
 `x_3_6 >= x_3_1 + 12`
 
-#### No-Overlap Constraints
+##### No-Overlap Constraints
 
 Our second constraint, [equation 2](#eq2), ensures that multiple jobs don't use
 any machine at the same time.
@@ -219,7 +316,7 @@ There are two cases:
     the jobs don't overlap on a machine. If -allow_quad is set to False, this
     mixed integer formulation of this constraint will be used.
 
-#### Makespan Constraint
+##### Makespan Constraint
 
 In this demonstration, the maximum makespan can be defined by the user or it
 will be determined using a greedy heuristic. Placing an upper bound on the

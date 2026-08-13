@@ -1,6 +1,6 @@
 dash[diskcache]~=4.0
 dash-mantine-components~=2.5
-dwave-ocean-sdk~=9.3
+dwave-ocean-sdk~=9.4
 matplotlib~=3.10
 mip~=1.17
 pandas~=2.3

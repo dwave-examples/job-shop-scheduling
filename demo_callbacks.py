@@ -22,10 +22,10 @@ from dash import MATCH, ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 
-from demo_configs import CLASSICAL_TAB_LABEL, DWAVE_TAB_LABEL, RESOURCE_NAMES
-from src.demo_enums import Model, SolverType
+from demo_configs import CLASSICAL_TAB_LABEL, DWAVE_TAB_LABEL, RESOURCE_NAMES, SHOW_CQM
+from src.demo_enums import HybridSolverType, Model, SolverType
 from src.generate_charts import generate_gantt_chart, get_empty_figure, get_minimum_task_times
-from src.job_shop_scheduler import run_shop_scheduler
+from src.job_shop_scheduler import run_shop_scheduler, run_stride
 from src.model_data import JobShopData
 
 BASE_PATH = pathlib.Path(__file__).parent.resolve()
@@ -64,39 +64,71 @@ def toggle_left_column(collapse_trigger: int, to_collapse_class: str) -> tuple[s
 
 
 @dash.callback(
+    Output("hybrid-select", "style"),
+    Input("solver-select", "value"),
+)
+def update_solvers_selected(selected_solvers: list[str]) -> dict:
+    """Hide Stride/CQM selector when Hybrid is unselected. Not applicable when SHOW_CQM is False.
+
+    Args:
+        selected_solvers (list[str]): Currently selected solvers.
+
+    Returns:
+        dict: Style for the hybrid select wrapper.
+    """
+    if SHOW_CQM and f"{SolverType.HYBRID.value}" in selected_solvers:
+        return {}
+
+    return {"display": "none"}
+
+
+@dash.callback(
     Output("solver-select", "disabled"),
     Output("solver-select", "value"),
+    Output("hybrid-select", "disabled"),
+    Output("hybrid-select", "value"),
     Output("last-selected-solvers", "data"),
+    Output("last-selected-hybrid-solver", "data"),
     inputs=[
         Input("model-select", "value"),
         State("solver-select", "value"),
+        State("hybrid-select", "value"),
         State("last-selected-solvers", "data"),
+        State("last-selected-hybrid-solver", "data"),
     ],
     prevent_initial_call=True,
 )
 def update_solver_options(
-    model: int, selected_solvers: list[int], last_selected_solvers: list[int]
-) -> tuple[bool, list[int], list[int]]:
+    model: int, selected_solvers: list[str], hybrid_selected_solver: str, last_selected_solvers: list[str], last_selected_hybrid_solver: str
+) -> tuple[bool, list[str], bool, str, list[str], str]:
     """Hides and shows classical solver option using 'hide-classic' class.
 
     Args:
         model_value: Currently selected model from model-select dropdown.
         selected_solvers: Currently selected solvers.
+        hybrid_selected_solver: Currently selected hybrid solver.
         last_selected_solvers: Previously selected solvers.
+        last_selected_hybrid_solver: Previously selected hybrid solver.
 
     Returns:
         A tuple containing:
 
         - bool: Whether the solver-select checklist should be disabled.
-        - list[int]: Unselects MIP and selects Hybrid or updates to previously selected solvers.
-        - list[int]: Updates last_selected_solvers with the list of solvers that were selected
+        - list[str]: Unselects MIP and selects Hybrid or updates to previously selected solvers.
+        - bool: Whether the hybrid-select checklist should be disabled.
+        - str: Which hybrid solver to select.
+        - list[str]: Updates last_selected_solvers with the list of solvers that were selected
+        before updating.
+        - str: Updates last_selected_hybrid_solver with the hybrid solver that was selected
         before updating.
     """
     model = Model(int(model))
+    print(hybrid_selected_solver)
+    print(type(hybrid_selected_solver))
 
     if model is Model.QM:
-        return True, [f"{SolverType.HYBRID.value}"], selected_solvers
-    return False, last_selected_solvers, dash.no_update
+        return True, [f"{SolverType.HYBRID.value}"], True, f"{HybridSolverType.CQM.value}", selected_solvers, hybrid_selected_solver
+    return False, last_selected_solvers, False, last_selected_hybrid_solver, dash.no_update, dash.no_update
 
 
 class UpdateTabLoadingStateReturn(NamedTuple):
@@ -127,11 +159,12 @@ class UpdateTabLoadingStateReturn(NamedTuple):
         Input("run-button", "n_clicks"),
         Input("cancel-button", "n_clicks"),
         State("solver-select", "value"),
+        State("hybrid-select", "value"),
     ],
     prevent_initial_call=True,
 )
 def update_tab_loading_state(
-    run_click: int, cancel_click: int, solvers: list[str]
+    run_click: int, cancel_click: int, solvers: list[str], hybrid_solver: str
 ) -> UpdateTabLoadingStateReturn:
     """Updates the tab loading state after the run button
     or cancel button has been clicked.
@@ -140,7 +173,7 @@ def update_tab_loading_state(
         run_click: The number of times the run button has been clicked.
         cancel_click: The number of times the cancel button has been clicked.
         solvers: The list of selected solvers.
-
+        hybrid_solver: The selected hybrid solver.
     Returns:
         A NamedTuple, UpdateTabLoadingStateReturn, containing:
 
@@ -150,23 +183,25 @@ def update_tab_loading_state(
         - mip_tab_disabled: True if Classical tab should be disabled, False otherwise.
         - run_button_style: Style for the run button.
         - cancel_button_style: Style for the cancel button.
-        - running_dwave: Whether Hybrid is running.
+        - running_dwave: Whether CQM/Stride solver is running.
         - running_classical: Whether MIP is running.
         - active_tab: The value of the tab that should be active.
     """
 
     if ctx.triggered_id == "run-button" and run_click > 0:
-        run_hybrid = f"{SolverType.HYBRID.value}" in solvers
+        run_cqm = int(hybrid_solver) is HybridSolverType.CQM.value
+        run_stride = int(hybrid_solver) is HybridSolverType.STRIDE.value
         run_mip = f"{SolverType.MIP.value}" in solvers
+        run_dwave = run_cqm or run_stride
 
         return UpdateTabLoadingStateReturn(
-            dwave_tab_label="Loading..." if run_hybrid else dash.no_update,
+            dwave_tab_label="Loading..." if run_dwave else dash.no_update,
             mip_tab_label="Loading..." if run_mip else dash.no_update,
-            dwave_tab_disabled=True if run_hybrid else dash.no_update,
+            dwave_tab_disabled=True if run_dwave else dash.no_update,
             mip_tab_disabled=True if run_mip else dash.no_update,
             run_button_style={"display": "none"},
             cancel_button_style={},
-            running_dwave=run_hybrid,
+            running_dwave=run_dwave,
             running_classical=run_mip,
             active_tab="input-tab",
         )
@@ -206,8 +241,8 @@ def update_button_visibility(running_dwave: bool, running_classical: bool) -> tu
     return {"display": "none"}, {}
 
 
-class RunOptimizationCqmReturn(NamedTuple):
-    """Return type for the ``run_optimization_cqm`` callback function."""
+class RunOptimizationHybridReturn(NamedTuple):
+    """Return type for the ``run_optimization_hybrid`` callback function."""
 
     gantt_chart: go.Figure = dash.no_update
     makespan: int = 0
@@ -229,26 +264,28 @@ class RunOptimizationCqmReturn(NamedTuple):
         Input("run-button", "n_clicks"),
         State("model-select", "value"),
         State("solver-select", "value"),
+        State("hybrid-select", "value"),
         State("scenario-select", "value"),
         State("solver-time-limit", "value"),
     ],
     cancel=[Input("cancel-button", "n_clicks")],
     prevent_initial_call=True,
 )
-def run_optimization_cqm(
-    run_click: int, model: int, solvers: list[int], scenario: str, time_limit: int
-) -> RunOptimizationCqmReturn:
+def run_optimization_hybrid(
+    run_click: int, model: int, solvers: list[str], hybrid_solver: str, scenario: str, time_limit: int
+) -> RunOptimizationHybridReturn:
     """Runs optimization using the D-Wave hybrid solver.
 
     Args:
         run_click: The number of times the run button has been clicked.
         model: The model to use for the optimization.
         solvers: The solvers that have been selected.
+        hybrid_solver: The hybrid solver that have been selected.
         scenario: The scenario to use for the optimization.
         time_limit: The time limit for the optimization.
 
     Returns:
-        A NamedTuple, RunOptimizationCqmReturn, containing:
+        A NamedTuple, RunOptimizationHybridReturn, containing:
 
         - gantt_chart: Gantt chart for the D-Wave hybrid solver.
         - makespan: Makespan for the D-Wave hybrid solver.
@@ -258,22 +295,23 @@ def run_optimization_cqm(
         - running_dwave: Whether D-Wave solver is running.
     """
     if f"{SolverType.HYBRID.value}" not in solvers:
-        return RunOptimizationCqmReturn()
+        return RunOptimizationHybridReturn()
 
-    start = time.perf_counter()
     model = Model(int(model))
     model_data = JobShopData()
+
+    running_cqm = int(hybrid_solver) is HybridSolverType.CQM.value
 
     model_data.load_from_file(DATA_PATH.joinpath(scenario), resource_names=RESOURCE_NAMES)
 
     results = run_shop_scheduler(
         model_data,
-        use_mip_solver=False,
+        solver="cqm" if running_cqm else "stride",
         allow_quadratic_constraints=(model is Model.QM),
         solver_time_limit=time_limit,
     )
 
-    return RunOptimizationCqmReturn(
+    return RunOptimizationHybridReturn(
         gantt_chart=generate_gantt_chart(results),
         makespan=results["Finish"].max(),
         tab_classname="tab-success",
@@ -341,7 +379,7 @@ def run_optimization_mip(
 
     results = run_shop_scheduler(
         model_data,
-        use_mip_solver=True,
+        solver="mip",
         allow_quadratic_constraints=False,
         solver_time_limit=time_limit,
     )

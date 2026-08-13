@@ -25,6 +25,8 @@ Run the job shop scheduling problem for several different scenarios.
 Explore the Gantt Chart for solution details.
 """
 
+SHOW_CQM = True  # whether to show the CQM solver as an option in the app; set to False to hide it
+
 CLASSICAL_TAB_LABEL = "Classical Results"
 DWAVE_TAB_LABEL = "Hybrid Results"
 

@@ -25,10 +25,11 @@ from demo_configs import (
     DWAVE_TAB_LABEL,
     MAIN_HEADER,
     SCENARIOS,
+    SHOW_CQM,
     SOLVER_TIME,
     THUMBNAIL,
 )
-from src.demo_enums import Model, SolverType
+from src.demo_enums import HybridSolverType, Model, SolverType
 
 THEME_COLOR = "#2d4376"
 
@@ -141,7 +142,6 @@ def generate_settings_form() -> html.Div:
 
     scenario_options = generate_options(SCENARIOS)
     model_options = generate_options(Model)
-    solver_options = generate_options(SolverType)
 
     return html.Div(
         className="settings",
@@ -151,17 +151,44 @@ def generate_settings_form() -> html.Div:
                 "scenario-select",
                 scenario_options,
             ),
-            dropdown(
-                "Model",
-                "model-select",
-                model_options,
+            html.Div(
+                dropdown(
+                    "Model",
+                    "model-select",
+                    model_options,
+                ), className="" if SHOW_CQM else "display-none"
             ),
-            checklist(
-                "Solver",
-                "solver-select",
-                solver_options,
-                values=[option["value"] for option in solver_options],
-                inline=False,
+            dmc.CheckboxGroup(
+                id="solver-select",
+                label="Solvers",
+                value=[f"{SolverType.HYBRID.value}", f"{SolverType.MIP.value}"],
+                children=dmc.Group(
+                    [
+                        dmc.Checkbox(
+                            label=SolverType.HYBRID.label,
+                            value=f"{SolverType.HYBRID.value}",
+                            color=THEME_COLOR,
+                        ),
+                        dmc.RadioGroup(
+                            children=dmc.Group(
+                                [
+                                    dmc.Radio(s.label, value=f"{s.value}", color=THEME_COLOR)
+                                    for s in HybridSolverType
+                                ]
+                            ),
+                            id="hybrid-select",
+                            value=f"{HybridSolverType.STRIDE.value}",
+                            size="sm",
+                            deselectable=False,
+                            style={"display": "none"},
+                        ),
+                        dmc.Checkbox(
+                            label=SolverType.MIP.label,
+                            value=f"{SolverType.MIP.value}",
+                            color=THEME_COLOR,
+                        ),
+                    ],
+                ),
             ),
             input(
                 "Solver Time Limit (seconds)",
@@ -263,6 +290,7 @@ def create_interface():
                 tabIndex=1,
             ),
             dcc.Store("last-selected-solvers"),
+            dcc.Store("last-selected-hybrid-solver"),
             dcc.Store("running-dwave"),
             dcc.Store("running-classical"),
             # Settings and results columns

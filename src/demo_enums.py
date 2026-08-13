@@ -14,6 +14,7 @@
 
 from enum import Enum
 
+from demo_configs import SHOW_CQM
 
 class SolverType(Enum):
     HYBRID = 0
@@ -22,8 +23,20 @@ class SolverType(Enum):
     @property
     def label(self):
         return {
-            SolverType.HYBRID: "D-Wave Hybrid Solver",
+            SolverType.HYBRID: "Quantum Hybrid" if SHOW_CQM else "Stride Hybrid Solver",
             SolverType.MIP: "Classical Solver (COIN-OR Branch-and-Cut)",
+        }[self]
+
+
+class HybridSolverType(Enum):
+    STRIDE = 0
+    CQM = 1
+
+    @property
+    def label(self):
+        return {
+            HybridSolverType.STRIDE: "Stride",
+            HybridSolverType.CQM: "CQM",
         }[self]
 
 

@@ -76,8 +76,8 @@ The command line arguments are as follows:
     (default: output/solution.txt)
 -   -op (--output_plot): path to the output plot file
     (default: output/schedule.png)
--   -m (--use_mip_solver): Whether to use the MIP solver instead of the CQM
-    solver (default: False)
+-   -s (--solver): Which solver to use; one of stride, cqm, or mip
+    (default: stride)
 -   -v (--verbose): Whether to print verbose output (default: True)
 -   -q (--allow_quad): Whether to allow quadratic constraints (default: False)
 -   -p (--profile): The profile variable to pass to the Sampler. Defaults to

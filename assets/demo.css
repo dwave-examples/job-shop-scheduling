@@ -71,3 +71,40 @@ limitations under the License.
     border-top-color: var(--orange);
     border-style: solid;
 }
+
+.mantine-Checkbox-label {
+    font-size: 1rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+.mantine-Radio-label {
+    font-size: 0.875rem;
+    font-weight: 400;
+    margin: 0;
+}
+
+#solver-select-label {
+    font-size: 1.125rem;
+    font-family: var(--font);
+    color: var(--blue-darkest);
+    margin: 1rem 0 0.5rem;
+    font-weight: 600;
+    display: block;
+}
+
+.mantine-Group-root {
+    display: block;
+}
+
+.mantine-RadioGroup-root .mantine-Group-root {
+    display: flex;
+}
+
+.mantine-Group-root > .mantine-Checkbox-root {
+    margin: 0 0 0.75rem 0.5rem;
+}
+
+.mantine-Group-root > .mantine-InputWrapper-root.mantine-RadioGroup-root {
+    margin: 0 0 1.25rem 2.5rem;
+}

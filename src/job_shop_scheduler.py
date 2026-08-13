@@ -333,8 +333,7 @@ class JobShopSchedulingCQM:
 def run_shop_scheduler(
     job_data: JobShopData,
     solver_time_limit: int = 60,
-    use_mip_solver: bool = False,
-    use_cqm_solver: bool = False,
+    solver: str = "stride",
     verbose: bool = False,
     allow_quadratic_constraints: bool = True,
     out_sol_file: str = None,
@@ -350,9 +349,8 @@ def run_shop_scheduler(
             scheduling problem.
         solver_time_limit (int, optional): Upper bound on how long the schedule can be; leave empty to
             auto-calculate an appropriate value. Defaults to None.
-        use_mip_solver (bool, optional): Whether to use the MIP solver instead of the CQM solver.
-            Defaults to False.
-        use_cqm_solver (bool, optional): Whether to use the CQM solver. Defaults to False.
+        solver (str, optional): Which solver to use; one of "stride", "cqm", or "mip".
+            Defaults to "stride".
         verbose (bool, optional): Whether to print verbose output. Defaults to False.
         allow_quadratic_constraints (bool, optional): Whether to allow quadratic constraints.
             Defaults to True.
@@ -367,10 +365,10 @@ def run_shop_scheduler(
     Returns:
         A DataFrame that has the following columns: Task, Start, Finish, and Resource.
     """
-    if allow_quadratic_constraints and use_mip_solver:
+    if allow_quadratic_constraints and solver == "mip":
         raise ValueError("Cannot use quadratic constraints with MIP solver")
 
-    if not use_mip_solver and not use_cqm_solver:
+    if solver == "stride":
         return run_stride(job_data, solver_time_limit=solver_time_limit, profile=profile)
 
     model_building_start = time()
@@ -393,7 +391,7 @@ def run_shop_scheduler(
     model_building_time = time() - model_building_start
     solver_start_time = time()
 
-    if use_mip_solver:
+    if solver == "mip":
         sol = model.call_mip_solver(time_limit=solver_time_limit)
     else:
         model.call_cqm_solver(time_limit=solver_time_limit, model_data=job_data, profile=profile)
@@ -551,17 +549,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-m",
-        "--use_mip_solver",
-        action="store_true",
-        help="Whether to use the MIP solver instead of the CQM solver",
-    )
-
-    parser.add_argument(
-        "-cqm",
-        "--use_cqm_solver",
-        action="store_true",
-        help="Whether to use the CQM solver instead of the Stride or SciPy solver",
+        "-s",
+        "--solver",
+        type=str,
+        choices=["stride", "cqm", "mip"],
+        default="stride",
+        help="Which solver to use",
     )
 
     parser.add_argument(
@@ -597,8 +590,7 @@ if __name__ == "__main__":
     allow_quadratic_constraints = args.allow_quad
     max_makespan = args.max_makespan
     profile = args.profile
-    use_mip_solver = args.use_mip_solver
-    use_cqm_solver = args.use_cqm_solver
+    solver = args.solver
     verbose = args.verbose
 
     job_data = JobShopData()
@@ -608,8 +600,7 @@ if __name__ == "__main__":
         job_data,
         time_limit,
         verbose=verbose,
-        use_mip_solver=use_mip_solver,
-        use_cqm_solver=use_cqm_solver,
+        solver=solver,
         allow_quadratic_constraints=allow_quadratic_constraints,
         profile=profile,
         max_makespan=max_makespan,

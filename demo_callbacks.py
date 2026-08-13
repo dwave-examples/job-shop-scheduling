@@ -306,8 +306,7 @@ def run_optimization_hybrid(
 
     results = run_shop_scheduler(
         model_data,
-        use_mip_solver=False,
-        use_cqm_solver=running_cqm,
+        solver="cqm" if running_cqm else "stride",
         allow_quadratic_constraints=(model is Model.QM),
         solver_time_limit=time_limit,
     )
@@ -380,7 +379,7 @@ def run_optimization_mip(
 
     results = run_shop_scheduler(
         model_data,
-        use_mip_solver=True,
+        solver="mip",
         allow_quadratic_constraints=False,
         solver_time_limit=time_limit,
     )

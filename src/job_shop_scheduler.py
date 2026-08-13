@@ -309,12 +309,12 @@ class JobShopSchedulingCQM:
             warnings.warn("Warning: MIP did not find feasible solution")
             return
         best_sol = sol.first.sample
+        self.completion_time = best_sol["makespan"]
 
-        for var, val in best_sol.items():
-
-            if var.startswith("x"):
-                job, machine = var[1:].split("_")
+        for job in self.model_data.jobs:
+            for machine in self.model_data.resources:
                 task = self.model_data.get_resource_job_tasks(job=job, resource=machine)
+                val = best_sol[self.x[(job, machine)].variables[0]]
                 self.solution[(job, machine)] = task, val, task.duration
 
     def solution_as_dataframe(self) -> pd.DataFrame:

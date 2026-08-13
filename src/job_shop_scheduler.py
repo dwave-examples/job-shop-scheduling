@@ -369,7 +369,9 @@ def run_shop_scheduler(
         raise ValueError("Cannot use quadratic constraints with MIP solver")
 
     if solver == "stride":
-        return run_stride(job_data, solver_time_limit=solver_time_limit, profile=profile)
+        return run_stride(
+            job_data, solver_time_limit=solver_time_limit, profile=profile, verbose=verbose
+        )
 
     model_building_start = time()
     model = JobShopSchedulingCQM(
@@ -470,6 +472,7 @@ def run_stride(
     job_data: JobShopData,
     solver_time_limit: int = 60,
     profile: str = None,
+    verbose: bool = False,
 ) -> pd.DataFrame:
     """Solve a job-shop problem with the Stride hybrid solver and generator model.
 
@@ -477,22 +480,75 @@ def run_stride(
         job_data: A JobShopData object with the scheduling problem.
         solver_time_limit: Solver time limit in seconds.
         profile: Optional Leap profile.
+        verbose: Whether to print verbose output.
 
     Returns:
         A DataFrame with Task, Start, Finish, and Resource columns.
     """
+    model_building_start = time()
     times, machines, jobs = _build_stride_generator_inputs(job_data)
     model = job_shop_scheduling(times=times, machines=machines)
+    model_building_time = time() - model_building_start
 
+    if verbose:
+        print(" \n" + "=" * 25 + "MODEL INFORMATION" + "=" * 25)
+        print(
+            tabulate(
+                [
+                    ["Decision Variables", "Constraints", "Nodes"],
+                    [model.num_decisions(), model.num_constraints(), model.num_nodes()],
+                ],
+                headers="firstrow",
+            )
+        )
+
+    solver_start_time = time()
     with StrideHybridSolver(profile=profile) as sampler:
         min_time_limit = int(np.ceil(sampler.estimated_min_time_limit(model)))
         time_limit = max(min_time_limit, int(solver_time_limit))
 
         sampler.sample(model, time_limit=time_limit, label="Examples - Job Shop Scheduling")
+    solver_time = time() - solver_start_time
 
-    if model.objective.state_size() == 0:
+    if model.states.size() == 0:
         warnings.warn("Warning: Stride hybrid solver did not return any states")
         return pd.DataFrame(columns=["Job", "Task", "Start", "Finish", "Resource"])
+
+    if verbose:
+        print(" \n" + "=" * 30 + "BEST SAMPLE SET" + "=" * 30)
+        print(
+            tabulate(
+                [
+                    ["State", "Makespan", "Feasible"],
+                    *[
+                        [i, int(model.objective.state(i)), model.feasible(i)]
+                        for i in range(model.states.size())
+                    ],
+                ],
+                headers="firstrow",
+            )
+        )
+
+        print(" \n" + "=" * 55 + "SOLUTION RESULTS" + "=" * 55)
+        print(
+            tabulate(
+                [
+                    [
+                        "Completion Time",
+                        "Model Building Time (s)",
+                        "Solver Call Time (s)",
+                        "Total Runtime (s)",
+                    ],
+                    [
+                        int(model.objective.state(0)),
+                        int(model_building_time),
+                        int(solver_time),
+                        int(solver_time + model_building_time),
+                    ],
+                ],
+                headers="firstrow",
+            )
+        )
 
     start_times = model.get_start_times(0)
     end_times = model.get_end_times(0)

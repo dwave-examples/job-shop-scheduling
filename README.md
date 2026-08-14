@@ -170,10 +170,10 @@ package. This example builds the Stride model with the `dwave-optimization`
 
 These are the parameters of the problem:
 
--   `n` : is the number of jobs
--   `m` : is the number of machines
--   `M_(j,t)`: is the machine that processes task `t` of job `j`
--   `D_(j,t)`: is the processing duration that task `t` needs for job `j`
+-   `n`: Number of jobs
+-   `m`: Number of machines
+-   `M_(j,t)`: Machine that processes task `t` of job `j`
+-   `D_(j,t)`: Processing duration that task `t` needs for job `j`
 
 Each task is identified by a single global index: task `t` of job `j` is task
 number `m*j + t`, for `n*m` tasks in total.
@@ -218,7 +218,7 @@ symbolically as part of the model:
 
 #### Objective
 
-Our objective is to minimize the makespan `w`, which is the completion time of
+The objective is to minimize the makespan `w`, which is the completion time of
 the machine that finishes last:
 
 ```

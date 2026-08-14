@@ -40,7 +40,7 @@ If you are cloning the repo to your local system, working in a
 
 ## Usage
 Your development environment should be configured to access the
-[Leap&trade; quantum cloud service](https://docs.dwavequantum.com/en/latest/ocean/sapi_access_basic.html).
+[Leap quantum cloud service](https://docs.dwavequantum.com/en/latest/ocean/sapi_access_basic.html).
 You can see information about supported IDEs and authorizing access to your Leap account
 [here](https://docs.dwavequantum.com/en/latest/ocean/leap_authorization.html).
 
@@ -77,8 +77,8 @@ The command line arguments are as follows:
     (default: output/solution.txt)
 -   -op (--output_plot): path to the output plot file
     (default: output/schedule.png)
--   -s (--solver): Which solver to use; one of stride, cqm, or mip
-    (default: stride)
+-   -s (--solver): Which solver to use; one of `stride`, `cqm`, or `mip`
+    (default: `stride`)
 -   -v (--verbose): Whether to print verbose output (default: True)
 -   -q (--allow_quad): Whether to allow quadratic constraints (default: False)
 -   -p (--profile): The profile variable to pass to the Sampler. Defaults to
@@ -163,11 +163,8 @@ This example can solve the JSS problem with one of three solvers, selected with 
 
 The Stride solver optimizes nonlinear models built with the
 [dwave-optimization](https://github.com/dwavesystems/dwave-optimization)
-package. This example builds the model with the package's
-[`job_shop_scheduling` generator](https://github.com/dwavesystems/dwave-optimization/blob/main/dwave/optimization/generators.py#L996),
-which implements a variant of JSS in which every job is processed on every
-machine, so a problem with `n` jobs and `m` machines has `n * m` tasks in
-total.
+package. This example builds the Stride model with the `dwave-optimization`
+[`job_shop_scheduling` generator](https://github.com/dwavesystems/dwave-optimization/blob/main/dwave/optimization/generators.py#L996).
 
 #### Parameters
 
@@ -249,15 +246,15 @@ The following formulation is used with the `cqm` and `mip` solvers.
 
 These are the parameters of the problem:
 
--   `n` : is the number of jobs
--   `m` : is the number of machines
--   `J` : is the set of jobs (`{0,1,2,...,n}`)
--   `M` : is the set of machines (`{0,1,2,...,m}`)
--   `T` : is the set of tasks (`{0,1,2,...,m}`) that has same dimension as `M`.
--   `M_(j,t)`:  is the machine that processes task `t` of job `j`
--   `T_(j,i)`  : is the task that is processed by machine `i` for job `j`
--   `D_(j,t)`:  is the processing duration that task `t` needs for job `j`
--   `V`:  maximum possible makespan
+-   `n`: Number of jobs
+-   `m`: Number of machines
+-   `J`: Set of jobs (`{0,1,2,...,n}`)
+-   `M`: Set of machines (`{0,1,2,...,m}`)
+-   `T`: Set of tasks (`{0,1,2,...,m}`) that has same dimension as `M`.
+-   `M_(j,t)`: Machine that processes task `t` of job `j`
+-   `T_(j,i)`: Task that is processed by machine `i` for job `j`
+-   `D_(j,t)`: Processing duration that task `t` needs for job `j`
+-   `V`: Maximum possible makespan
 
 #### Variables
 

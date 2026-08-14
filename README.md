@@ -221,7 +221,7 @@ symbolically as part of the model:
 
 #### Objective
 
-Our objective is to minimize the makespan `w`, which is the completion time of
+The objective is to minimize the makespan `w`, which is the completion time of
 the machine that finishes last:
 
 ```

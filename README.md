@@ -210,7 +210,7 @@ symbolically as part of the model:
     ```
     s_(j,t) = max(e_(j,t-1), c_(M_(j,t)))    task waits for its job and its machine
     e_(j,t) = s_(j,t) + D_(j,t)              task runs for its duration
-    c_(M_(j,t)) ← e_(j,t)                    machine is busy until the task ends
+    c_(M_(j,t)) ← e_(j,t)                    machine availability is updated to the calculated task-end time
     ```
 
     where `e_(j,t-1)` is taken to be `0` for the first task (`t = 0`) of each

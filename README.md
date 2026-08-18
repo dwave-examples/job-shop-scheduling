@@ -204,8 +204,8 @@ symbolically as part of the model:
     the earliest time at which both its machine is free and the preceding task
     of the same job has finished. With `s_(j,t)` and `e_(j,t)` denoting the
     start and end times of task `t` of job `j`, and `c_i` denoting the time at
-    which machine `i` next becomes available (initially `0` for every machine).
-    Placing a task requires computing the following, in order:
+    which machine `i` next becomes available (initially `0` for every machine),
+    placing a task requires computing the following, in order:
 
     ```
     s_(j,t) = max(e_(j,t-1), c_(M_(j,t)))    task waits for its job and its machine

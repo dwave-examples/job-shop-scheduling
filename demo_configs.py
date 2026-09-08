@@ -36,7 +36,7 @@ SCENARIOS = {
     "3x3": "instance3_3.txt",
     "5x5": "instance5_5.txt",
     "10x10": "instance10_10.txt",
-    "15x15": "taillard15_15.txt",
+    "15x15": "instance15_15.txt",
     "20x15": "instance20_15.txt",
     "20x25": "instance20_25.txt",
     "30x30": "instance30_30.txt",
